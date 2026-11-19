@@ -11,6 +11,7 @@ public class Ayarlar : BasePluginConfig
     [JsonPropertyName("Reklam")] public ReklamAyar Reklam { get; set; } = new();
     [JsonPropertyName("Komutlar")] public List<KomutAyar> Komutlar { get; set; } = new();
     [JsonPropertyName("Parasut")] public ParasutAyar Parasut { get; set; } = new();
+    [JsonPropertyName("Afis")] public AfisAyar Afis { get; set; } = new();
     [JsonPropertyName("Gizlenme")] public GizlenmeAyar Gizlenme { get; set; } = new();
     [JsonPropertyName("SteamGrup")] public SteamGrupAyar SteamGrup { get; set; } = new();
     // !ip komutunda gösterilen adres
@@ -82,6 +83,16 @@ public class KomutAyar
     [JsonPropertyName("Mesaj")] public string Mesaj { get; set; } = "";
     [JsonPropertyName("Herkese")] public bool Herkese { get; set; }
     [JsonPropertyName("Orta")] public string Orta { get; set; } = "";        // ekran ortası yazısı (sadece yazana)
+}
+
+// Haritalardaki site afişi panoları (Afis.cs). Yerler oyun içinde !afis ile seçilir, afisler.json'a yazılır.
+public class AfisAyar
+{
+    [JsonPropertyName("Acik")] public bool Acik { get; set; } = true;
+    [JsonPropertyName("Yetki")] public string Yetki { get; set; } = "@css/root";
+    // ycc_hud Workshop eklentisindeki modeller (üretici github/YccRank/hud/afis_model.py)
+    [JsonPropertyName("GenisModel")] public string GenisModel { get; set; } = "models/ycc/afis_genis.vmdl";
+    [JsonPropertyName("KareModel")] public string KareModel { get; set; } = "models/ycc/afis_kare.vmdl";
 }
 
 public class ParasutAyar
