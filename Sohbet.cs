@@ -110,7 +110,8 @@ public partial class YccTemel
         if (!Gercek(p)) return;
         AddTimer(1.5f, () =>
         {
-            if (!Gercek(p) || p!.Clan == Config.Sohbet.SkorEtiketi) return;
+            // YccSkin'in "[FACEIT 7]" etiketi ezilmez (2026-11-19)
+            if (!Gercek(p) || p!.Clan == Config.Sohbet.SkorEtiketi || p.Clan.StartsWith("[FACEIT")) return;
             p.Clan = Config.Sohbet.SkorEtiketi;
             Utilities.SetStateChanged(p, "CCSPlayerController", "m_szClan");
         });
