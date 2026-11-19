@@ -23,7 +23,7 @@ public partial class YccTemel : BasePlugin, IPluginConfig<Ayarlar>
         // Bir bölüm kurulurken hata verirse diğerleri yine çalışsın
         foreach (var (ad, kur) in new (string, Action)[] {
             ("sohbet", SohbetKur), ("discord", DiscordKur), ("reklam", ReklamKur), ("komutlar", KomutlarKur),
-            ("parasut", ParasutKur), ("afiş", AfisKur), ("gizlenme", GizlenmeKur), ("exec_after", ExecAfterKur),
+            ("parasut", ParasutKur), ("afiş", AfisKur), ("revolver", RevolverKur), ("gizlenme", GizlenmeKur), ("exec_after", ExecAfterKur),
             ("harita ayarı", HaritaAyarKur), ("steam grubu", SteamGrupKur), ("teşhis", TeshisKur) })
         {
             try { kur(); }

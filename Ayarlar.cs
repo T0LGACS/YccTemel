@@ -16,6 +16,8 @@ public class Ayarlar : BasePluginConfig
     [JsonPropertyName("SteamGrup")] public SteamGrupAyar SteamGrup { get; set; } = new();
     // !ip komutunda gösterilen adres
     [JsonPropertyName("SunucuAdresi")] public string SunucuAdresi { get; set; } = "";
+    // Doğuşta Deagle alınıp Revolver verilir (Revolver.cs; AWP sunucusunda açık)
+    [JsonPropertyName("DeagleYerineRevolver")] public bool DeagleYerineRevolver { get; set; } = false;
 }
 
 public class SohbetAyar
