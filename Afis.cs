@@ -88,6 +88,10 @@ public partial class YccTemel
         var pawn = p.PlayerPawn.Value;
         if (pawn?.AbsOrigin == null) { Yaz(p, "{RED}Önce doğman lazım."); return; }
         float.TryParse(deger.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out var s);
+        // Sayı yazılmazsa tek adım (sunucu sahibi 2026-11-19 "!afis ileri" yazıp kımıldamadığını gördü)
+        if (deger == "") s = islem switch { "don" => 15, "boyut" => 0, "genis" or "kare" => 0, _ => 10 };
+        // Ters yönler (sunucu sahibi "!afis sol 100" yazdı): sol = sag eksi, geri = ileri eksi, asagi = yukari eksi
+        (islem, s) = islem switch { "sol" => ("sag", -s), "geri" => ("ileri", -s), "asagi" => ("yukari", -s), _ => (islem, s) };
         var harita = Server.MapName;
         _duzenlenen.TryGetValue(p.Slot, out var d);
         bool elde = d.prop != null && d.prop.IsValid;
@@ -106,7 +110,7 @@ public partial class YccTemel
                 if (prop == null) { Yaz(p, "{RED}Pano oluşturulamadı (model yüklü mü?)."); return; }
                 _afisVarlik.Add(prop);
                 _duzenlenen[p.Slot] = (y, prop);
-                Yaz(p, "{GREEN}Pano kondu (kaydedilmedi).{DEFAULT} Ayarla: !afis ileri/sag/yukari <birim>, !afis don <derece>, !afis boyut <1.5>, sonra {LIME}!afis kaydet");
+                Yaz(p, "{GREEN}Pano kondu (kaydedilmedi).{DEFAULT} Ayarla: !afis sag/sol/ileri/geri/yukari/asagi 20 (sayısız 10 birim), !afis don 90, !afis boyut <1.5>, sonra {LIME}!afis kaydet");
                 return;
             }
             case "ileri": case "sag": case "yukari":
@@ -155,7 +159,7 @@ public partial class YccTemel
                 Yaz(p, $"{harita}: {(_afisler.GetValueOrDefault(harita)?.Count ?? 0)} kayıtlı pano.");
                 return;
             default:
-                Yaz(p, "{LIME}!afis genis{DEFAULT} / {LIME}!afis kare{DEFAULT} [mesafe] koyar · ileri/sag/yukari <birim> (eksi geri) · don <derece> · boyut <çarpan> · {LIME}kaydet{DEFAULT} · duzenle (en yakını) · sil · liste");
+                Yaz(p, "{LIME}!afis genis{DEFAULT} / {LIME}!afis kare{DEFAULT} [mesafe] koyar · sag/sol/ileri/geri/yukari/asagi <birim> · don <derece> · boyut <çarpan> · {LIME}kaydet{DEFAULT} · duzenle (en yakını) · sil · liste");
                 return;
         }
         AfisTasi(d.prop!, d.yer);
