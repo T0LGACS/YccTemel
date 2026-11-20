@@ -14,7 +14,14 @@ public partial class YccTemel
         if (!Config.DeagleYerineRevolver) return;
         RegisterEventHandler<EventPlayerSpawn>((e, _) =>
         {
-            if (e.Userid is { IsValid: true } p) AddTimer(0.2f, () => DeagleDegistir(p));
+            if (e.Userid is { IsValid: true } p) AddTimer(0.2f, () =>
+            {
+                // Eldeki silahı silmek oyuncunun oyununu "CopyExistingEntity: missing client entity" ile çökertiyordu (2026-11-20):
+                // önce bıçağa geçilir, Deagle sonra silinir
+                if (!p.IsValid || !p.PawnIsAlive) return;
+                p.ExecuteClientCommand("slot3");
+                AddTimer(0.15f, () => DeagleDegistir(p));
+            });
             return HookResult.Continue;
         });
     }
@@ -25,7 +32,9 @@ public partial class YccTemel
         var ws = p.PlayerPawn.Value?.WeaponServices;
         var deagle = ws?.MyWeapons.Select(h => h.Value).FirstOrDefault(w => w is { IsValid: true } && w.AttributeManager.Item.ItemDefinitionIndex == DeagleNo);
         if (deagle == null) return;
+        if (!p.IsBot && ws!.ActiveWeapon.Value?.Index == deagle.Index) return;   // bıçağa geçmediyse dokunma (botun oyunu yok, çökmez)
         deagle.Remove();
         p.GiveNamedItem("weapon_revolver");
+        p.ExecuteClientCommand("slot2");
     }
 }
