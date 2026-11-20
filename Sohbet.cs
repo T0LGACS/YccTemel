@@ -28,7 +28,7 @@ public partial class YccTemel
         // sırasına göre engellenen takım mesajlarını yine gösterebiliyordu.
         HookUserMessage(SayText2, SohbetMesaji);
 
-        if (Config.Sohbet.SkorEtiketi != "")
+        if (Config.Sohbet.SkorEtiketi != "" || Config.Vip.Acik)   // VIP etiketi de doğuşta takılır
         {
             RegisterEventHandler<EventPlayerConnectFull>((e, _) => { SkorEtiketiSonra(e.Userid); return HookResult.Continue; });
             RegisterEventHandler<EventPlayerSpawn>((e, _) => { SkorEtiketiSonra(e.Userid); return HookResult.Continue; });
@@ -92,9 +92,12 @@ public partial class YccTemel
             ? Utilities.GetPlayers().Where(x => Gercek(x) && x.Team != p.Team && !alicilar.Contains(x) && Yetkili(x, Config.Sohbet.AdminYetki)).ToList()
             : new List<CCSPlayerController>();
 
-        if (e == null && gozculer.Count == 0) return HookResult.Continue;
+        // Sezon VIP'i: etiket + kendi seçtiği renkler (admin etiketi önce gelir)
+        var vip = (e == null || e.Kim == "herkes") && _vip.TryGetValue(p.SteamID, out var v) ? v : null;
+        if (e == null && vip == null && gozculer.Count == 0) return HookResult.Continue;
 
-        var satir = e == null ? null : $"{bas}{e.On}{(e.On == "" ? "" : " ")}{e.IsimRenk}{isim}{{DEFAULT}}: {e.MesajRenk}{mesaj}";
+        var satir = vip != null ? $"{bas}{{GOLD}}{vip.Etiket} {{{vip.IsimRenk}}}{isim}{{DEFAULT}}: {{{vip.MesajRenk}}}{mesaj}"
+            : e == null ? null : $"{bas}{e.On}{(e.On == "" ? "" : " ")}{e.IsimRenk}{isim}{{DEFAULT}}: {e.MesajRenk}{mesaj}";
         var gozcuSatir = $"{{GREY}}[Gözcü] {takimAdi}{(oluMu ? "☠ " : "")}{isim}: {mesaj}";
         // Mesaj kancasının içinden yeni mesaj gönderilmez, bir sonraki karede gönderilir
         Server.NextFrame(() =>
@@ -110,9 +113,12 @@ public partial class YccTemel
         if (!Gercek(p)) return;
         AddTimer(1.5f, () =>
         {
-            // YccSkin'in "[FACEIT 7]" etiketi ezilmez (2026-11-19)
-            if (!Gercek(p) || p!.Clan == Config.Sohbet.SkorEtiketi || p.Clan.StartsWith("[FACEIT")) return;
-            p.Clan = Config.Sohbet.SkorEtiketi;
+            if (!Gercek(p)) return;
+            // VIP etiketi her şeyin önüne geçer; VIP değilse YccSkin'in "[FACEIT 7]" etiketi ezilmez (2026-11-19)
+            var vip = _vip.TryGetValue(p!.SteamID, out var v);
+            var hedef = vip ? v!.Etiket : Config.Sohbet.SkorEtiketi;
+            if (hedef == "" || p.Clan == hedef || (!vip && p.Clan.StartsWith("[FACEIT"))) return;
+            p.Clan = hedef;
             Utilities.SetStateChanged(p, "CCSPlayerController", "m_szClan");
         });
     }

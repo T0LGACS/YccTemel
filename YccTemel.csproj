@@ -6,10 +6,12 @@
     <Nullable>enable</Nullable>
     <AssemblyName>YccTemel</AssemblyName>
     <RootNamespace>YccTemel</RootNamespace>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.371" />
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.371" ExcludeAssets="runtime" />
+    <PackageReference Include="MySqlConnector" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>

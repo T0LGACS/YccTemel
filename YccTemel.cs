@@ -24,7 +24,7 @@ public partial class YccTemel : BasePlugin, IPluginConfig<Ayarlar>
         foreach (var (ad, kur) in new (string, Action)[] {
             ("sohbet", SohbetKur), ("discord", DiscordKur), ("reklam", ReklamKur), ("komutlar", KomutlarKur),
             ("parasut", ParasutKur), ("afiş", AfisKur), ("revolver", RevolverKur), ("gizlenme", GizlenmeKur), ("exec_after", ExecAfterKur),
-            ("harita ayarı", HaritaAyarKur), ("steam grubu", SteamGrupKur), ("teşhis", TeshisKur) })
+            ("harita ayarı", HaritaAyarKur), ("steam grubu", SteamGrupKur), ("teşhis", TeshisKur), ("vip", VipKur) })
         {
             try { kur(); }
             catch (Exception e) { Console.WriteLine($"[YccTemel] {ad} kurulamadı: {e.Message}"); }

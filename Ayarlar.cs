@@ -18,6 +18,18 @@ public class Ayarlar : BasePluginConfig
     [JsonPropertyName("SunucuAdresi")] public string SunucuAdresi { get; set; } = "";
     // Doğuşta Deagle alınıp Revolver verilir (Revolver.cs; AWP sunucusunda açık)
     [JsonPropertyName("DeagleYerineRevolver")] public bool DeagleYerineRevolver { get; set; } = false;
+    // Sezon VIP'i (Vip.cs): ycc_vip tablosunu okur. Veritabanı bilgileri YccRank'takiyle aynı.
+    [JsonPropertyName("Vip")] public VipAyar Vip { get; set; } = new();
+}
+
+public class VipAyar
+{
+    [JsonPropertyName("Acik")] public bool Acik { get; set; } = false;
+    [JsonPropertyName("Sunucu")] public string Sunucu { get; set; } = "127.0.0.1";
+    [JsonPropertyName("Port")] public int Port { get; set; } = 3306;
+    [JsonPropertyName("Kullanici")] public string Kullanici { get; set; } = "cs2";
+    [JsonPropertyName("Sifre")] public string Sifre { get; set; } = "";
+    [JsonPropertyName("Ad")] public string Ad { get; set; } = "cs2";
 }
 
 public class SohbetAyar
