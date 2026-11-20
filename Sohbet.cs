@@ -116,8 +116,10 @@ public partial class YccTemel
             if (!Gercek(p)) return;
             // VIP etiketi her şeyin önüne geçer; VIP değilse YccSkin'in "[FACEIT 7]" etiketi ezilmez (2026-11-19)
             var vip = _vip.TryGetValue(p!.SteamID, out var v);
-            var hedef = vip ? v!.Etiket : Config.Sohbet.SkorEtiketi;
-            if (hedef == "" || p.Clan == hedef || (!vip && p.Clan.StartsWith("[FACEIT"))) return;
+            // Etiketi boş VIP ya da hiç etiketi olmayan oyuncu null geliyordu: günde ~1000 hata (2026-11-20)
+            var hedef = (vip ? v?.Etiket : Config.Sohbet.SkorEtiketi) ?? "";
+            var simdiki = p.Clan ?? "";
+            if (hedef == "" || simdiki == hedef || (!vip && simdiki.StartsWith("[FACEIT"))) return;
             p.Clan = hedef;
             Utilities.SetStateChanged(p, "CCSPlayerController", "m_szClan");
         });
