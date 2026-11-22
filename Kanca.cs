@@ -21,6 +21,7 @@ public partial class YccTemel
     }
 
     private readonly HashSet<ulong> _kancaAcik = new();
+    private readonly HashSet<int> _kancaTusu = new();   // +kanca basılı olanlar (slot)
     private readonly Dictionary<int, KancaDurum> _kanca = new();
 
     private bool KancaHakki(CCSPlayerController p) => Yetkili(p, KancaYetki) || _vip.ContainsKey(p.SteamID);
@@ -32,8 +33,18 @@ public partial class YccTemel
             if (!Gercek(p)) return;
             if (!KancaHakki(p!)) { Yaz(p!, "{GOLD}[Kanca]{DEFAULT} Kanca sadece admin ve VIP'lere açık."); return; }
             if (_kancaAcik.Remove(p!.SteamID)) { KancaBirak(p.Slot); Yaz(p, "{GOLD}[Kanca]{DEFAULT} Kanca {RED}kapandı{DEFAULT}."); }
-            else { _kancaAcik.Add(p.SteamID); Yaz(p, "{GOLD}[Kanca]{DEFAULT} Kanca {GREEN}açık{DEFAULT}: bir yere bak, {GREEN}R{DEFAULT} tuşunu basılı tut."); }
+            else { _kancaAcik.Add(p.SteamID); Yaz(p, "{GOLD}[Kanca]{DEFAULT} Kanca {GREEN}açık{DEFAULT}: bir yere bak, {GREEN}R{DEFAULT} tuşunu basılı tut. Başka tuş için konsola: {GREEN}bind mouse4 +kanca"); }
         });
+
+        // İstediğin tuşa: konsola "bind mouse4 +kanca" (2026-11-22, sunucu sahibi: "tuş atamasını değişebilir miyiz").
+        // Tuşa basınca kanca kendiliğinden açılır, !kanca gerekmez; bırakınca kopar.
+        AddCommand("+kanca", "Kanca tuşu (basılı tut)", (p, _) =>
+        {
+            if (!Gercek(p) || !KancaHakki(p!)) return;
+            _kancaAcik.Add(p!.SteamID);
+            _kancaTusu.Add(p.Slot);
+        });
+        AddCommand("-kanca", "Kanca tuşu bırakıldı", (p, _) => { if (p != null) _kancaTusu.Remove(p.Slot); });
 
         RegisterListener<Listeners.OnTick>(() =>
         {
@@ -42,7 +53,7 @@ public partial class YccTemel
             {
                 if (!Gercek(p) || !_kancaAcik.Contains(p.SteamID)) { if (p != null && _kanca.ContainsKey(p.Slot)) KancaBirak(p.Slot); continue; }
                 var pawn = p.PlayerPawn.Value;
-                var basili = p.PawnIsAlive && pawn is { IsValid: true } && (p.Buttons & PlayerButtons.Reload) != 0;
+                var basili = p.PawnIsAlive && pawn is { IsValid: true } && ((p.Buttons & PlayerButtons.Reload) != 0 || _kancaTusu.Contains(p.Slot));
                 if (!basili) { KancaBirak(p.Slot); continue; }
                 if (!_kanca.TryGetValue(p.Slot, out var d)) { KancaAt(p, pawn!); continue; }
                 KancaCek(pawn!, d);
@@ -52,7 +63,7 @@ public partial class YccTemel
         RegisterEventHandler<EventPlayerDeath>((e, _) => { if (e.Userid != null) KancaBirak(e.Userid.Slot); return HookResult.Continue; });
         RegisterEventHandler<EventPlayerDisconnect>((e, _) =>
         {
-            if (e.Userid != null) { KancaBirak(e.Userid.Slot); _kancaAcik.Remove(e.Userid.SteamID); }
+            if (e.Userid != null) { KancaBirak(e.Userid.Slot); _kancaAcik.Remove(e.Userid.SteamID); _kancaTusu.Remove(e.Userid.Slot); }
             return HookResult.Continue;
         });
         // Raunt yenilenirken oyun varlıkları kendisi temizliyor; ipler ondan önce silinir
