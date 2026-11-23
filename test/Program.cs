@@ -26,6 +26,8 @@ Esit(false, Metin.Kaydedilmez("selam", "!./"), "normal mesaj kaydedilir");
 Esit("1.2.3.4", Metin.IpYalin("1.2.3.4:27005"), "ip portsuz");
 Esit("", Metin.IpYalin(null), "ip yok");
 
+Esit("{\"username\":\"Ali\",\"content\":\"selam \\u0022x\\u0022\"}", Metin.VortexaGovde("Ali", "selam \"x\""), "vortexa gövdesi");
+Esit("https://steamcommunity.com/profiles/76561197960287930", Metin.SteamProfil(76561197960287930), "steam profili");
 Esit("exec ozelayar.cfg", Metin.IlkArgumanSonrasi("1 \"exec ozelayar.cfg\"", "1"), "exec_after_delay tırnaklı");
 Esit("sv_hibernate_when_empty 1", Metin.IlkArgumanSonrasi("45 sv_hibernate_when_empty 1", "45"), "exec_after_delay tırnaksız");
 Esit("say a", Metin.Tirnaksiz(" \"say a\" "), "tırnak soyma");

@@ -71,12 +71,18 @@ public static class Metin
         JsonSerializer.Serialize(new
         {
             embeds = new[] { new {
-                author = new { name = isim, url = $"https://steamcommunity.com/profiles/{steamId}", icon_url = avatar },
+                author = new { name = isim, url = SteamProfil(steamId), icon_url = avatar },
                 description = metin,
                 color = renk,
             } },
             allowed_mentions = new { parse = Array.Empty<string>() },   // sohbetteki @everyone kimseyi etiketlemesin
         }, new JsonSerializerOptions { DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull });
+
+    public static string SteamProfil(ulong steamId) => $"https://steamcommunity.com/profiles/{steamId}";
+
+    // Vortexa webhook gövdesi: yazan adı + düz metin (Discord biçiminin sade hali).
+    public static string VortexaGovde(string isim, string metin) =>
+        JsonSerializer.Serialize(new { username = isim, content = metin });
 
     // "{SAAT}" vb. yer tutucuları doldurur
     public static string Doldur(string bicim, params (string ad, string deger)[] d)

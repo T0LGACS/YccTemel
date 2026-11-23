@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Channels;
+using CounterStrikeSharp.API.Core;
 
 namespace YccTemel;
 
@@ -13,13 +14,15 @@ public partial class YccTemel
     private Channel<(string isim, ulong sid, string metin)>? _kuyruk;
     private CancellationTokenSource? _dur;
     private readonly ConcurrentDictionary<ulong, string?> _avatar = new();
+    private Channel<(string adres, string govde)>? _vortexa;
 
     private void DiscordKur()
     {
+        VortexaKur();
         if (!Config.Discord.Webhook.StartsWith("https://")) return;
         // Kuyruk dolarsa (Discord uzun süre cevap vermezse) en eski mesaj atılır, bellek şişmez
         _kuyruk = Channel.CreateBounded<(string, ulong, string)>(new BoundedChannelOptions(500) { FullMode = BoundedChannelFullMode.DropOldest });
-        _dur = new CancellationTokenSource();
+        _dur ??= new CancellationTokenSource();
         var webhook = Config.Discord.Webhook;
         var renk = Metin.HexRenk(Config.Discord.Renk);
         var token = _dur.Token;
@@ -34,11 +37,48 @@ public partial class YccTemel
         }, token);
     }
 
-    private void DiscordGonder(string isim, ulong sid, string metin) => _kuyruk?.Writer.TryWrite((isim, sid, metin));
+    private void DiscordGonder(string isim, ulong sid, string metin)
+    {
+        _kuyruk?.Writer.TryWrite((isim, sid, metin));
+        if (Config.Discord.VortexaSohbet.StartsWith("https://")) _vortexa?.Writer.TryWrite((Config.Discord.VortexaSohbet, Metin.VortexaGovde(isim, $"{metin}\n{Metin.SteamProfil(sid)}")));
+    }
+
+    // Vortexa'ya düz mesaj (Discord biçimi: username + content). Vortexa [ad](link) tanımaz, sadece düz adresi link yapar:
+    // Steam profili mesajın altına düz adres olarak eklenir (kullanıcı 2026-11-23). Kendi kuyruğu: Discord yavaşlarsa Vortexa beklemesin.
+    private void VortexaKur()
+    {
+        if (!Config.Discord.VortexaSohbet.StartsWith("https://") && !Config.Discord.VortexaGiris.StartsWith("https://")) return;
+        _vortexa = Channel.CreateBounded<(string, string)>(new BoundedChannelOptions(500) { FullMode = BoundedChannelFullMode.DropOldest });
+        _dur ??= new CancellationTokenSource();
+        var token = _dur.Token;
+        _ = Task.Run(async () =>
+        {
+            await foreach (var (adres, govde) in _vortexa.Reader.ReadAllAsync(token))
+            {
+                try { await Gonder(adres, govde, token); }
+                catch (OperationCanceledException) when (token.IsCancellationRequested) { return; }
+                catch (Exception e) { Console.WriteLine("[YccTemel] Vortexa'ya gönderilemedi: " + e.Message); }
+            }
+        }, token);
+        if (!Config.Discord.VortexaGiris.StartsWith("https://")) return;
+        var adres = Config.Discord.VortexaGiris;
+        var etiket = Config.Discord.Etiket == "" ? "" : Config.Discord.Etiket + " ";
+        RegisterEventHandler<EventPlayerConnectFull>((e, _) =>
+        {
+            if (Gercek(e.Userid)) _vortexa.Writer.TryWrite((adres, Metin.VortexaGovde("CS2", $"{etiket}🟢 **{e.Userid!.PlayerName}** sunucuya girdi\n{Metin.SteamProfil(e.Userid.SteamID)}")));
+            return HookResult.Continue;
+        });
+        RegisterEventHandler<EventPlayerDisconnect>((e, _) =>
+        {
+            if (Gercek(e.Userid)) _vortexa.Writer.TryWrite((adres, Metin.VortexaGovde("CS2", $"{etiket}🔴 **{e.Userid!.PlayerName}** sunucudan çıktı\n{Metin.SteamProfil(e.Userid.SteamID)}")));
+            return HookResult.Continue;
+        });
+    }
 
     private void DiscordKapat()
     {
         _kuyruk?.Writer.TryComplete();
+        _vortexa?.Writer.TryComplete();
         _dur?.Cancel();
     }
 

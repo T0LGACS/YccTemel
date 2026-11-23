@@ -62,6 +62,10 @@ public class DiscordAyar
     [JsonPropertyName("Webhook")] public string Webhook { get; set; } = "";
     [JsonPropertyName("Bicim")] public string Bicim { get; set; } = "[VDS] [{SAAT}] {TAKIM} : {MESAJ}";
     [JsonPropertyName("Renk")] public string Renk { get; set; } = "#FF7A00";
+    // Vortexa (YCC TEAM sunucusu) webhook'ları: sohbet Discord'a ek olarak buraya da, giriş-çıkış sadece buraya (IP'siz).
+    [JsonPropertyName("VortexaSohbet")] public string VortexaSohbet { get; set; } = "";
+    [JsonPropertyName("VortexaGiris")] public string VortexaGiris { get; set; } = "";
+    [JsonPropertyName("Etiket")] public string Etiket { get; set; } = "";   // giriş-çıkış satırının başı, örn. [ANA]
 }
 
 public class ReklamAyar
